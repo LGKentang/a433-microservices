@@ -1,0 +1,36 @@
+# versi 2
+version: "2"  
+
+services:
+  # menjalankan services item-app dengan
+  # - nama image yang akan digunakan : darrenmaverick/item-app:v1
+  # - port forwarding, 80 dari luar, map 8080 yang di expose docker
+  # - environment variable yang dipass langsung ke container NODE_ENV=production DB_HOST=item-db
+  # - container hanya akan dibikin setelah container "item-db" telah dibuat, supaya databasenya dibuat terlebih dahulu sebelum aplikasinya dijalankan
+  # - auto restart apabila ada gangguan seperti crash, fail, atau host systemnya reboot
+
+  item-app:  
+    image: darrenmaverick/item-app:v1
+    ports:
+      - "80:8080" 
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=item-db
+    depends_on:
+      - item-db 
+    restart: always
+
+  # - menggunakan image yang dipull langsung dari docker hub registry untuk database mongodb
+  # - mounting sebuah persistent volume kepada directory /data/db pada container, ini digunakan agar
+  #   data pada container akan di save ke volume tersebut, ini mencegah kehilangan data karena container itu sifatnya ephemeral (sementara)
+  # - auto restart apabila ada gangguan seperti crash, fail, atau host systemnya reboot
+
+  item-db: 
+    image: mongo:3
+    volumes:
+      - app-db:/data/db
+    restart: always
+
+volumes:
+  # volume yang dibikin dan dimanage oleh docker engine
+  app-db: 
